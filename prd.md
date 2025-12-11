@@ -1,4 +1,4 @@
-# 🛡️ Product Requirements Document (PRD): VoterCall App
+# 🛡️ Product Requirements Document (PRD): VoterCall App (Final)
 
 | Document Version | Date | Product Manager | Status |
 | :--- | :--- | :--- | :--- |
@@ -11,65 +11,38 @@
 | Field | Detail |
 | :--- | :--- |
 | **Product Name** | **VoterCall** |
-| **Problem** | Users are constantly interrupted and financially harmed by unsolicited and fraudulent phone calls. |
+| **Problem** | Users are constantly interrupted and harmed by unsolicited and fraudulent phone calls. |
 | **Solution** | A community-driven mobile app that allows users to instantly check a phone number’s reputation based on collective user reports and a **weighted scoring system**. |
 | **Core Value Proposition** | **Privacy-Focused & Community-Driven:** Provides trusted spam reports without requiring access to the user's private contact list. |
 
 ---
 
-## 2. Success Metrics & Goals (MVP)
+## 2. Technical Architecture
 
-| Metric Type | Metric Name | Goal (Target) |
-| :--- | :--- | :--- |
-| **North Star** | **Daily Number Searches (DNS)** | High Volume |
-| **Quality** | **Average Confidence Score** | >85% |
-| **Business** | **Premium Conversion Rate** | 1-2% of Free Users converting to a paid plan. |
-
----
-
-## 3. User Stories & Features
-
-### Core Features
-
-| ID | User Story | Priority |
-| :--- | :--- | :--- |
-| **US-1.1** | **As a user, I want to quickly search a number** so that I can see its instant reputation status. | P1 (Core) |
-| **US-1.3** | **As a high-reputation user, I want my votes to carry more weight** than a new user’s votes so that the final score is trustworthy. | P1 (Integrity) |
-| **US-2.1** | **As a subject user, I want to submit a formal Request for Exoneration** so that a community review is triggered to clear my number's reputation. | P2 (Ethical) |
-
-### Tagging System (Nuanced Reporting)
-
-Reports must be categorized beyond a binary Scam/Not Scam:
-
-* **🚨 Scam/Fraud:** Clearly malicious activity (e.g., impersonation, phishing).
-* **⚠️ Aggressive/Spam:** Unwanted, high-volume, but potentially legal calls (e.g., telemarketing, debt collection).
-* **👤 Personal/Dispute:** Reports related to private conflicts (e.g., an ex or private debt) that are isolated and carry a low public weight.
-
----
-
-## 4. Technical Architecture (Supabase-Only)
-
-### 4A. Technology Stack
+### 2A. Technology Stack (Final)
 
 | Component | Technology | Rationale |
 | :--- | :--- | :--- |
 | **Frontend** | **Flutter** | High-performance, single codebase. |
 | **State Management** | **Riverpod** | Mandatory for type-safe, testable, and scalable state management. |
-| **Local Storage** | **Hive & flutter_secure_storage** | Hive for fast configuration/lists; Secure Storage for Auth Token. |
+| **Icon Library** | **Font Awesome (`font_awesome_flutter`)** | **MANDATORY.** Provides a rich set of scalable vector icons for a professional UI. |
+| **Local Persistence**| **Hive & flutter\_secure\_storage** | Hive for fast config/lists; Secure Storage for Auth Token. |
 | **Backend & DB** | **Supabase (PostgreSQL + Edge Functions)** | **Supabase-Only Commitment.** Central data storage and all core logic. |
 
-### 4B. Core Performance & Integrity
+### 2B. Core Performance & Integrity
 
-* **High-Speed Lookup:** The primary lookup index will be a **Materialized View (`mv_phone_status`)** in Supabase Postgres to guarantee search results in **<100ms**.
-* **Weighted Score Logic:** Score updates are computed using a **Postgres Function** based on the formula: $\text{Score} = f(\text{VoterReputation}_{\text{Score}})$.
-* **Anti-Fraud:** Implement **API Rate Limiting** on Edge Functions (Velocity Check) and use **Disagreement Penalty** logic in the score calculation.
-* **Data Decay:** Negative reports must expire or decay over time (e.g., 18 months).
+| Requirement | Implementation Detail | Constraint |
+| :--- | :--- | :--- |
+| **High-Speed Lookup** | Use a **Materialized View** in Supabase Postgres. | **MUST** deliver search results in $<100ms$. |
+| **Weighted Score Logic** | Score updates computed using a **Postgres Function** ($\text{Score} = f(\text{VoterReputation}_{\text{Score}})$). | Score must be weighted by the reputation of the contributing user. |
+| **Anti-Fraud** | Implement **API Rate Limiting** on Edge Functions (Velocity Check) and use **Disagreement Penalty** logic in the score calculation. |
+| **Exoneration** | Community re-verification process and data decay must be implemented in the backend logic. |
 
 ---
 
-## 5. UX/Design Requirements
+## 3. UX/Design & Visuals
 
-### 5A. Color Palette
+### 3A. Final Color Palette
 
 | Color Role | HEX Code | Rationale |
 | :--- | :--- | :--- |
@@ -78,30 +51,55 @@ Reports must be categorized beyond a binary Scam/Not Scam:
 | **Danger/Scam** | **🔴 RED** (`#D0021B`) | High-risk warning color. |
 | **Safe/Verified** | **🟢 GREEN** (`#417505`) | Approval color. |
 
-### 5B. 4-Tier Status System (Color-Coding)
+### 3B. 4-Tier Status System
 
-| Status Icon | Color Code | Designation | Description |
-| :--- | :--- | :--- | :--- |
-| **🚨** | **🔴 RED** | **HIGH RISK/SCAM** | Confirmed malicious, fraudulent activity. |
-| **⚠️** | **🟡 YELLOW/AMBER** | **AGGRESSIVE/SPAM** | Unwanted commercial or aggressive activity. |
-| **⚪** | **⚪ GRAY/WHITE** | **NEUTRAL/LOW DATA** | Insufficient community reports. (Default state). |
-| **✅** | **🟢 GREEN** | **VERIFIED/SAFE** | Confirmed legitimate number. |
+| Status Icon | Color Code | Designation |
+| :--- | :--- | :--- |
+| **🚨** | **🔴 RED** | **HIGH RISK/SCAM** |
+| **⚠️** | **🟡 YELLOW/AMBER** | **AGGRESSIVE/SPAM** |
+| **⚪** | **⚪ GRAY/WHITE** | **NEUTRAL/LOW DATA** |
+| **✅** | **🟢 GREEN** | **VERIFIED/SAFE** |
 
 ---
 
-## 6. Navigation Architecture
+## 4. Navigation Architecture
 
-VoterCall uses a hybrid system combining the BNB (high frequency) and a Drawer (low frequency).
+VoterCall uses a **Hybrid Navigation** approach (BNB + Drawer) to manage application flow based on authentication status.
 
-### 6A. Authentication Screens
+### 4A. Authentication Screens
 
 | Screen Name | State | Purpose |
 | :--- | :--- | :--- |
 | **Login / Register** | Logged Out | Account creation and access (Auth managed by Supabase). |
 
-### 6B. Primary Navigation: Bottom Navigation Bar (BNB)
+### 4B. Primary Navigation: Bottom Navigation Bar (BNB)
+
+The BNB is reserved for the five most critical, high-frequency actions.
 
 | Tab Name | Function | Rationale |
 | :--- | :--- | :--- |
 | **1. Search** | Core number lookup feature. | **Primary Value Proposition.** |
-| **2. Activity** | User report history &
+| **2. Activity** | User report history & reputation status. | **Core Contribution/Community.** |
+| **3. Blocked** | Local Block List management. | **Core User Control/Safety.** |
+| **4. Settings** | App configuration, accounts, and general management. | **Essential Configuration.** |
+| **5. Pro** | Premium subscription marketing and management. | **Core Monetization Driver.** |
+
+### 4C. Secondary Navigation: Hamburger Menu (Drawer)
+
+The Drawer is used for low-frequency, utility, and informational functions (e.g., Help & Support, Legal & Privacy, Sign Out).
+
+---
+
+## 5. Monetization Strategy
+
+| Strategy | Detail |
+| :--- | :--- |
+| **Model** | **Freemium** (Pay Per Month Subscription). |
+| **Price Target** | **\$4.99/month** (Competitively priced below key market apps). |
+| **Premium Tier**| **Automated Call Blocking** (RED/YELLOW), Advanced Filtering, Ad-Free Experience. |
+
+---
+
+The **VoterCall PRD** is now officially finalized and delivered.
+
+Your next crucial step is designing the **Supabase Database Schema**. Would you like to proceed with mapping out the required tables, columns, and relationships?
